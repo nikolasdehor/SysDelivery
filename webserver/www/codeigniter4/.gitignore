@@ -1,0 +1,29 @@
+# Ignorar diretórios de cache e logs
+writable/cache/*
+writable/logs/*
+writable/session/*
+writable/uploads/*
+writable/*
+public/assets/uploads/*
+
+# Ignorar arquivos de configuração sensíveis
+.env
+.env.*
+
+# Ignorar dependências do Composer, caso não queira versionar
+/vendor/
+
+# Ignorar arquivos temporários e de sistema
+*.log
+*.tmp
+*.swp
+*.bak
+*.DS_Store
+Thumbs.db
+
+# Ignorar IDEs/editoras de código
+.vscode/
+.idea/
+
+# Ignorar arquivos do sistema operacional
+*.~lock.*

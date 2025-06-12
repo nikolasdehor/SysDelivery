@@ -1,0 +1,84 @@
+Comandos docker
+
+Instale o Docker:
+- sudo apt install docker.io docker-compose
+
+Remover o Docker
+- sudo apt purge -y docker-ce docker-ce-cli containerd.io
+- sudo rm -rf /var/lib/docker
+- sudo rm -rf /var/lib/containerd
+
+Verifique a instalação:
+- docker --version
+
+Permita que seu usuário use Docker sem sudo:
+ - sudo usermod -aG docker $USER
+ - newgrp docker
+ 
+ 
+ Inciar web server com docker - acessar o diretório e usar o comando:
+ 
+ 
+ Criar o webserver com docker
+ - docker-compose up -d
+ 
+ Atualizar as mudanças na imagem docker do webserver 
+ - docker-compose up --buid
+ 
+ Remover o volume de uma na imagem docker do webserver 
+ - docker-compose up -v
+  
+ Reset Completo
+
+-docker-compose down -v
+-docker network prune -f
+-docker volume prune -f
+-docker-compose build --no-cache
+-docker-compose up -d
+ 
+ listar as imagens instaladas e ativas
+ - docker ps
+ 
+ listar as imagens instaladas e desativadas
+ - docker ps -a
+ 
+  
+
+Comandos para manipulação do mysql no docker
+
+- docker exec -it xampp_mysql /bin/bash
+- docker inspect xampp_mysql
+- mysql -u aluno -p --host=0.0.0.0 --port=3309
+   - show variables where variable_name='port';
+
+
+Comandos para uteis para usar no framework PHP
+
+Ver as extensões ativas
+ - php -m
+ 
+Instlar todas as extensções usados pelo codeigneter 4
+
+ - sudo apt install php-intl php-mbstring php-xml php-curl php-mysql
+
+Verificar se o host mysql está ok
+- docker exec -it apache_server bash
+- ping mysql 
+- ping 0.0.0.0
+ 
+Reiniciar o apache
+ - sudo systemctl restart apache2
+ 
+Iniciar o codeigneter
+ - php spark serve
+ 
+
+
+
+
+
+
+
+
+
+
