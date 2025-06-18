@@ -71,7 +71,8 @@
                         <i class="bi bi-lock"></i>
                         Senha
                     </label>
-                    <input type="password" placeholder="Informe a senha" name="senha" class="form-control" id="senha">
+                    <input type="password" placeholder="Informe a senha" name="senha" class="form-control" id="senha" required>
+                    <!-- O indicador de qualidade será inserido aqui pelo JavaScript -->
                 </div>
 
                 <!-- input confirmar senha -->
@@ -80,7 +81,8 @@
                         <i class="bi bi-lock"></i>
                         Confirmar Senha
                     </label>
-                    <input type="password" placeholder="Confirme a senha" name="confirmar_senha" class="form-control" id="confirmar_senha">
+                    <input type="password" placeholder="Confirme a senha" name="confirmar_senha" class="form-control" id="confirmar_senha" required>
+                    <!-- O indicador de confirmação será inserido aqui pelo JavaScript -->
                 </div>
 
                 <!-- input data de nascimento -->
@@ -103,8 +105,8 @@
 
                 <!-- botão Cadastrar -->
                 <p class="text-center">
-                    <button type="submit" class="btn btn-lg btn-primary">
-                        Cadastrar 
+                    <button type="submit" class="btn btn-lg btn-secondary" id="btn-cadastrar" disabled title="Complete todos os requisitos de senha para continuar">
+                        Cadastrar
                         <i class="bi bi-person-plus"></i>
                     </button>
                 </p>
@@ -119,3 +121,40 @@
         </div>
     </div>
 </div>
+
+<!-- CSS para validação de senha -->
+<link rel="stylesheet" href="<?= base_url('assets/css/password-validator.css') ?>">
+
+<!-- JavaScript para validação de senha -->
+<script src="<?= base_url('assets/js/password-validator.js') ?>"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar validador de senha para tela pública (com requisitos)
+    const passwordValidator = new PasswordValidator('senha', 'confirmar_senha', 'btn-cadastrar', {
+        showRequirements: true,
+        showStrengthBar: true,
+        publicForm: true
+    });
+
+    // Validação adicional do formulário
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (!passwordValidator.isValid()) {
+            e.preventDefault();
+            alert('Por favor, complete todos os requisitos de senha antes de continuar.');
+            return false;
+        }
+
+        // Validar outros campos obrigatórios
+        const requiredFields = ['nome', 'sobrenome', 'email', 'cpf', 'telefone', 'data_nasc'];
+        for (let field of requiredFields) {
+            const input = document.getElementById(field);
+            if (!input.value.trim()) {
+                e.preventDefault();
+                alert(`Por favor, preencha o campo ${input.previousElementSibling.textContent.replace(/[^a-zA-Z\s]/g, '').trim()}.`);
+                input.focus();
+                return false;
+            }
+        }
+    });
+});
+</script>

@@ -23,9 +23,17 @@ if(isset($_SESSION['login'])){
     </form>
 
     <br>
-    <a href="<?= base_url('relatorios/1') ?>" target="_blank" class="btn btn-primary mb-3">
-        <i class="fas fa-file-pdf"></i> Relatório de Usuários
-    </a>
+    <div class="mb-3">
+        <a href="<?= base_url('relatorios/1') ?>" target="_blank" class="btn btn-primary">
+            <i class="fas fa-file-pdf"></i> Relatório de Usuários
+        </a>
+        <a href="<?= base_url('usuarios/edit_nivel') ?>" class="btn btn-warning">
+            <i class="bi bi-shield-lock"></i> Alterar Níveis de Acesso
+        </a>
+        <a href="<?= base_url('usuarios/form_limpar_rate_limiting') ?>" class="btn btn-info">
+            <i class="bi bi-unlock"></i> Limpar Bloqueios de Login
+        </a>
+    </div>
 
     <table class="table">
         <thead>

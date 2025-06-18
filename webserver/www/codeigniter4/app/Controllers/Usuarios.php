@@ -46,8 +46,9 @@ class Usuarios extends BaseController
             'usuarios_nome' => 'required|max_length[255]|min_length[3]',
             'usuarios_sobrenome' => 'required',
             'usuarios_cpf' => 'required',
-            'usuarios_email' => 'required',
-            'usuarios_senha' => 'required',
+            'usuarios_email' => 'required|valid_email',
+            'usuarios_senha' => 'required|min_length[8]',
+            'usuarios_confirmar_senha' => 'required|matches[usuarios_senha]',
             'usuarios_fone' => 'required',
             'usuarios_data_nasc' => 'required',
         ])) {
@@ -92,6 +93,18 @@ class Usuarios extends BaseController
             return view('usuarios/index', $data);
         }
 
+        // Validação de força da senha
+        $senha = $_REQUEST['usuarios_senha'];
+        $senhaValidacao = validate_password_strength($senha, 8);
+
+        if (!$senhaValidacao['valid']) {
+            $errors = implode(', ', $senhaValidacao['errors']);
+            $data['msg'] = msg('A senha deve atender aos seguintes requisitos: ' . $errors, 'danger');
+            $data['usuarios'] = $this->usuarios->findAll();
+            $data['title'] = 'Usuarios';
+            return view('usuarios/index', $data);
+        }
+
         // Valida telefone
         if (!validate_phone($dados['usuarios_fone'])) {
             $data['msg'] = msg('Telefone inválido!', 'danger');
@@ -111,7 +124,7 @@ class Usuarios extends BaseController
         }
 
         // Hash seguro da senha
-        $dados['usuarios_senha'] = hash_password_secure($_REQUEST['usuarios_senha']);
+        $dados['usuarios_senha'] = hash_password_secure($senha);
 
         $this->usuarios->save($dados);
         
@@ -218,13 +231,14 @@ class Usuarios extends BaseController
     }
 
     public function salvar_senha():string {
+        helper('security');
         $nivel = session()->get('login')->usuarios_nivel;
 
         // Checks whether the submitted data passed the validation rules.
         if(!$this->validate([
             'usuarios_senha_atual' => 'required',
-            'usuarios_nova_senha' => 'required|max_length[14]|min_length[6]',
-            'usuarios_confirmar_senha' => 'required|max_length[14]|min_length[6]'
+            'usuarios_nova_senha' => 'required|min_length[8]',
+            'usuarios_confirmar_senha' => 'required|min_length[8]'
         ])) {
             
             // The validation fails, so returns the form.
@@ -234,7 +248,7 @@ class Usuarios extends BaseController
                 'usuarios_confirmar_senha' => $_REQUEST['usuarios_confirmar_senha']
             ];
             $data['title'] = 'Usuarios';
-            $data['msg'] = msg("Divergência de dados ou a senha deve ter no mínimo 6 digitos!","danger");
+            $data['msg'] = msg("Divergência de dados ou a senha deve ter no mínimo 8 caracteres!","danger");
             return view('usuarios/edit_senha',$data);
         }
         $usuarioId = (int) $_REQUEST['usuarios_id'];
@@ -330,14 +344,83 @@ class Usuarios extends BaseController
 
     public function salvar_nivel(): string
     {
+        helper('security');
+
+        // Verifica se o usuário logado tem permissão de administrador
+        $loginSession = session()->get('login');
+        if (!$loginSession || $loginSession->usuarios_nivel != 2) {
+            $data['msg'] = msg('Sem permissão para alterar níveis de acesso!', 'danger');
+            return view('login', $data);
+        }
+
+        $usuarioId = $_REQUEST['usuarios_id'];
+        $novoNivel = $_REQUEST['usuarios_nivel'];
+
+        // Verificação de segurança adicional: evita auto-promoção indevida
+        if ($loginSession->usuarios_id == $usuarioId) {
+            // Se o usuário está alterando seu próprio nível
+            $nivelAtual = $loginSession->usuarios_nivel;
+
+            // Não permite que um usuário se promova para um nível superior
+            if ($novoNivel > $nivelAtual) {
+                $data['msg'] = msg('Não é possível se autopromover para um nível superior!', 'danger');
+                $data['usuarios'] = $this->usuarios->findAll();
+                $data['title'] = 'Usuarios';
+
+                // Log da tentativa de auto-promoção
+                log_security_event('SELF_PROMOTION_ATTEMPT', [
+                    'user_id' => $usuarioId,
+                    'current_level' => $nivelAtual,
+                    'attempted_level' => $novoNivel
+                ]);
+
+                return view('usuarios/index', $data);
+            }
+        }
 
         $dataForm = [
-            'usuarios_id' => $_REQUEST['usuarios_id'],
-            'usuarios_nivel' => $_REQUEST['usuarios_nivel']
+            'usuarios_id' => $usuarioId,
+            'usuarios_nivel' => $novoNivel
         ];
 
-        $this->usuarios->update($_REQUEST['usuarios_id'], $dataForm);
-        $data['msg'] = msg('Nivel alterada!','success');
+        $this->usuarios->update($usuarioId, $dataForm);
+
+        // CORREÇÃO: Se o usuário alterou seu próprio nível, atualiza a sessão
+        if ($loginSession->usuarios_id == $usuarioId) {
+            // Busca os dados atualizados do usuário no banco
+            $usuarioAtualizado = $this->usuarios->find($usuarioId);
+
+            if ($usuarioAtualizado) {
+                // Atualiza a sessão com o novo nível
+                $infoSessionAtualizada = (object)[
+                    'usuarios_id' => $usuarioAtualizado->usuarios_id,
+                    'usuarios_nivel' => $usuarioAtualizado->usuarios_nivel,
+                    'usuarios_nome' => $usuarioAtualizado->usuarios_nome,
+                    'usuarios_sobrenome' => $usuarioAtualizado->usuarios_sobrenome,
+                    'usuarios_cpf' => $usuarioAtualizado->usuarios_cpf,
+                    'usuarios_email' => $usuarioAtualizado->usuarios_email,
+                    'logged_in' => TRUE,
+                    'login_time' => $loginSession->login_time // Mantém o tempo de login original
+                ];
+                session()->set('login', $infoSessionAtualizada);
+
+                // Log da alteração de nível próprio
+                log_security_event('SELF_LEVEL_CHANGE', [
+                    'user_id' => $usuarioId,
+                    'old_level' => $loginSession->usuarios_nivel,
+                    'new_level' => $novoNivel
+                ]);
+            }
+        } else {
+            // Log da alteração de nível de outro usuário
+            log_security_event('USER_LEVEL_CHANGE', [
+                'admin_id' => $loginSession->usuarios_id,
+                'target_user_id' => $usuarioId,
+                'new_level' => $novoNivel
+            ]);
+        }
+
+        $data['msg'] = msg('Nível alterado com sucesso!','success');
         $data['usuarios'] = $this->usuarios->findAll();
         $data['title'] = 'Usuarios';
         return view('usuarios/index',$data);
@@ -366,6 +449,77 @@ class Usuarios extends BaseController
         $data['usuarios'] = $this->usuarios->findAll();
 
         return view('usuarios/acessoADM', $data);
+    }
+
+    /**
+     * Exibe formulário para limpar rate limiting (apenas admin)
+     */
+    public function form_limpar_rate_limiting(): string
+    {
+        // Verifica se o usuário logado tem permissão de administrador
+        $loginSession = session()->get('login');
+        if (!$loginSession || $loginSession->usuarios_nivel != 2) {
+            $data['msg'] = msg('Sem permissão para esta operação!', 'danger');
+            return view('login', $data);
+        }
+
+        $data['title'] = 'Limpar Rate Limiting';
+        return view('usuarios/limpar_rate_limiting', $data);
+    }
+
+    /**
+     * Limpa rate limiting para usuários bloqueados (apenas admin)
+     */
+    public function limpar_rate_limiting(): string
+    {
+        helper('security');
+
+        // Verifica se o usuário logado tem permissão de administrador
+        $loginSession = session()->get('login');
+        if (!$loginSession || $loginSession->usuarios_nivel != 2) {
+            $data['msg'] = msg('Sem permissão para esta operação!', 'danger');
+            return view('login', $data);
+        }
+
+        $ip = $_REQUEST['ip'] ?? null;
+
+        if ($ip) {
+            // Limpa rate limiting para IP específico
+            $cleared = rate_limit_clear_user($ip);
+            $data['msg'] = msg("Rate limiting limpo para IP {$ip}. {$cleared} entradas removidas.", 'success');
+        } else {
+            // Limpa rate limiting geral (todos os IPs conhecidos)
+            $cache = \Config\Services::cache();
+
+            // Tenta limpar alguns padrões comuns
+            $patterns = ['login_attempts_', 'api_rate_limit_', 'rate_limit_'];
+            $cleared = 0;
+
+            // Nota: Esta é uma implementação básica. Em produção, seria melhor
+            // ter um sistema mais sofisticado para listar e limpar caches
+            for ($i = 1; $i <= 255; $i++) {
+                for ($j = 1; $j <= 255; $j++) {
+                    $testIp = "192.168.{$i}.{$j}";
+                    $cleared += rate_limit_clear_user($testIp);
+
+                    $testIp = "10.0.{$i}.{$j}";
+                    $cleared += rate_limit_clear_user($testIp);
+                }
+            }
+
+            $data['msg'] = msg("Rate limiting geral limpo. {$cleared} entradas removidas.", 'success');
+        }
+
+        // Log da operação
+        log_security_event('RATE_LIMIT_CLEARED', [
+            'admin_id' => $loginSession->usuarios_id,
+            'target_ip' => $ip ?? 'all',
+            'cleared_count' => $cleared ?? 0
+        ]);
+
+        $data['usuarios'] = $this->usuarios->findAll();
+        $data['title'] = 'Usuarios';
+        return view('usuarios/index', $data);
     }
 
 }

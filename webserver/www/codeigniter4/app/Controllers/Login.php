@@ -73,6 +73,10 @@ class Login extends BaseController
             }
 
             if(($usuario->usuarios_email == $login || $usuario->usuarios_cpf == $login) && $senhaValida){
+                // Limpa rate limiting em caso de login bem-sucedido
+                $rateLimitKey = "login_attempts_" . $this->request->getIPAddress();
+                rate_limit_clear($rateLimitKey);
+
                 $infoSession = (object)[
                     'usuarios_id' => $usuario->usuarios_id,
                     'usuarios_nivel' => $usuario->usuarios_nivel,

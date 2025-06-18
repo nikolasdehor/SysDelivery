@@ -246,13 +246,55 @@ if (!function_exists('rate_limit_check')) {
     {
         $cache = \Config\Services::cache();
         $attempts = $cache->get($key) ?: 0;
-        
+
         if ($attempts >= $max_attempts) {
             return false;
         }
-        
+
         $cache->save($key, $attempts + 1, $time_window);
         return true;
+    }
+}
+
+if (!function_exists('rate_limit_clear')) {
+    /**
+     * Limpa rate limiting para uma chave específica
+     */
+    function rate_limit_clear($key)
+    {
+        $cache = \Config\Services::cache();
+        return $cache->delete($key);
+    }
+}
+
+if (!function_exists('rate_limit_clear_user')) {
+    /**
+     * Limpa rate limiting para um usuário específico (por IP ou login)
+     */
+    function rate_limit_clear_user($identifier = null)
+    {
+        $cache = \Config\Services::cache();
+
+        // Se não especificado, usa o IP atual
+        if ($identifier === null) {
+            $identifier = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        }
+
+        // Limpa diferentes tipos de rate limiting
+        $keys = [
+            "login_attempts_{$identifier}",
+            "api_rate_limit_{$identifier}",
+            "rate_limit_{$identifier}"
+        ];
+
+        $cleared = 0;
+        foreach ($keys as $key) {
+            if ($cache->delete($key)) {
+                $cleared++;
+            }
+        }
+
+        return $cleared;
     }
 }
 

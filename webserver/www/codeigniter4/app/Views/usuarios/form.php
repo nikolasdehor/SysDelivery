@@ -41,11 +41,26 @@ if (isset($_SESSION['login'])) {
                 id="usuarios_email">
         </div>
 
+        <?php if ($op == 'create'): ?>
+        <!-- Campos de senha apenas para criação de novo usuário -->
         <div class="mb-3">
-            <label for="usuarios_senha" class="form-label"> Senha </label>
-            <input type="password" class="form-control" name="usuarios_senha" value="<?= $usuarios->usuarios_senha; ?>"
-                id="usuarios_senha">
+            <label for="usuarios_senha" class="form-label">
+                <i class="bi bi-lock"></i>
+                Senha
+            </label>
+            <input type="password" class="form-control" name="usuarios_senha" id="usuarios_senha" required>
+            <!-- O indicador de qualidade será inserido aqui pelo JavaScript -->
         </div>
+
+        <div class="mb-3">
+            <label for="usuarios_confirmar_senha" class="form-label">
+                <i class="bi bi-lock"></i>
+                Confirmar Senha
+            </label>
+            <input type="password" class="form-control" name="usuarios_confirmar_senha" id="usuarios_confirmar_senha" required>
+            <!-- O indicador de confirmação será inserido aqui pelo JavaScript -->
+        </div>
+        <?php endif; ?>
 
         <div class="mb-3">
             <label for="usuarios_fone" class="form-label"> Fone </label>
@@ -62,12 +77,59 @@ if (isset($_SESSION['login'])) {
         <input type="hidden" name="usuarios_id" value="<?= $usuarios->usuarios_id; ?>">
 
         <div class="mb-3">
-            <button class="btn btn-success" type="submit"> <?= ucfirst($form) ?> <i class="bi bi-floppy"></i></button>
+            <?php if ($op == 'create'): ?>
+            <button class="btn btn-secondary" type="submit" id="btn-cadastrar-admin" disabled title="Complete todos os requisitos de senha para continuar">
+                <?= ucfirst($form) ?> <i class="bi bi-floppy"></i>
+            </button>
+            <?php else: ?>
+            <button class="btn btn-success" type="submit">
+                <?= ucfirst($form) ?> <i class="bi bi-floppy"></i>
+            </button>
+            <?php endif; ?>
         </div>
     </form>
 </div>
 
 <?= $this->endSection() ?>
+
+<?php if ($op == 'create'): ?>
+<!-- CSS para validação de senha -->
+<link rel="stylesheet" href="<?= base_url('assets/css/password-validator.css') ?>">
+
+<!-- JavaScript para validação de senha -->
+<script src="<?= base_url('assets/js/password-validator.js') ?>"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar validador de senha para tela administrativa (sem requisitos)
+    const passwordValidator = new PasswordValidator('usuarios_senha', 'usuarios_confirmar_senha', 'btn-cadastrar-admin', {
+        showRequirements: false,
+        showStrengthBar: true,
+        publicForm: false
+    });
+
+    // Validação adicional do formulário
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (!passwordValidator.isValid()) {
+            e.preventDefault();
+            alert('Por favor, complete todos os requisitos de senha antes de continuar.');
+            return false;
+        }
+
+        // Validar outros campos obrigatórios
+        const requiredFields = ['usuarios_nome', 'usuarios_sobrenome', 'usuarios_email', 'usuarios_cpf', 'usuarios_fone', 'usuarios_data_nasc'];
+        for (let field of requiredFields) {
+            const input = document.getElementById(field);
+            if (!input.value.trim()) {
+                e.preventDefault();
+                alert(`Por favor, preencha o campo ${input.previousElementSibling.textContent.replace(/[^a-zA-Z\s]/g, '').trim()}.`);
+                input.focus();
+                return false;
+            }
+        }
+    });
+});
+</script>
+<?php endif; ?>
 
 <?php
         // CORREÇÃO: Bloco combinado para Comum (0) e Funcionário (1)

@@ -25,6 +25,8 @@ class Cadastro extends BaseController
 
     public function salvar(): RedirectResponse
     {
+        helper('security');
+
         // Log dos dados recebidos
         log_message('debug', 'Dados recebidos no cadastro: ' . json_encode($this->request->getPost()));
 
@@ -34,12 +36,21 @@ class Cadastro extends BaseController
             'email' => 'required|valid_email',
             'cpf' => 'required|min_length[11]',
             'telefone' => 'required',
-            'senha' => 'required|min_length[6]',
+            'senha' => 'required|min_length[8]',
             'confirmar_senha' => 'matches[senha]',
             'data_nasc' => 'required|valid_date[Y-m-d]'
         ])) {
             log_message('error', 'Erro de validação no cadastro: ' . json_encode($this->validator->getErrors()));
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        // Validação adicional de força da senha
+        $senha = $this->request->getPost('senha');
+        $passwordErrors = validate_password_strength($senha, 8);
+
+        if (!empty($passwordErrors)) {
+            log_message('error', 'Senha não atende aos requisitos de segurança: ' . json_encode($passwordErrors));
+            return redirect()->back()->withInput()->with('errors', ['senha' => 'A senha deve atender aos seguintes requisitos: ' . implode(', ', $passwordErrors)]);
         }
 
         log_message('debug', 'Validação passou, tentando salvar usuário...');
@@ -50,7 +61,7 @@ class Cadastro extends BaseController
             'usuarios_email' => $this->request->getPost('email'),
             'usuarios_cpf' => $this->request->getPost('cpf'),
             'usuarios_fone' => $this->request->getPost('telefone'),
-            'usuarios_senha' => md5($this->request->getPost('senha')),
+            'usuarios_senha' => hash_password_secure($senha),
             'usuarios_data_nasc' => date('Y-m-d', strtotime($this->request->getPost('data_nasc'))),
             'usuarios_data_cadastro' => date('Y-m-d H:i:s'),
             'usuarios_nivel' => 0,
