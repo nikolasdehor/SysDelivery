@@ -46,7 +46,7 @@ class PasswordValidator {
         // Barra de força (sempre mostrar)
         if (this.options.showStrengthBar) {
             html += `
-                <div class="password-strength-bar mb-1">
+                <div class="password-strength-bar">
                     <div class="strength-bar-fill" id="strength-bar-${this.passwordField.id}"></div>
                 </div>
             `;
@@ -54,7 +54,7 @@ class PasswordValidator {
 
         // Texto de força (sempre mostrar)
         html += `
-            <div class="strength-text mb-1">
+            <div class="strength-text">
                 <span id="strength-text-${this.passwordField.id}">Digite uma senha</span>
             </div>
         `;

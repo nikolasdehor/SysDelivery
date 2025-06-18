@@ -20,15 +20,26 @@ class Enderecos extends BaseController
         helper('functions');
     }
 
-    public function index(): string
+    public function index()
     {
-        $data['title'] = 'Endereços';
-        $data['enderecos'] = $this->enderecos
-            ->join('cidades', 'enderecos_cidade_id = cidades_id')
-            ->join('usuarios', 'enderecos_usuario_id = usuarios_id')
-            ->findAll();
+        $nivel = session('login')->usuarios_nivel ?? 0;
 
-        return view('enderecos/index', $data);
+        if ($nivel == 2) {
+            // Admin - mostra todos os endereços
+            $data['title'] = 'Endereços';
+            $data['enderecos'] = $this->enderecos
+                ->join('cidades', 'enderecos_cidade_id = cidades_id')
+                ->join('usuarios', 'enderecos_usuario_id = usuarios_id')
+                ->findAll();
+
+            return view('enderecos/index', $data);
+        } elseif ($nivel == 0) {
+            // Cliente - redireciona para o perfil onde pode ver seus endereços
+            return redirect()->to(base_url('usuarios/perfil/' . session('login')->usuarios_id))
+                ->with('msg', msg('Seus endereços estão disponíveis no seu perfil!', 'info'));
+        } else {
+            return redirect()->to('/login')->with('msg', msg('Sem permissão de acesso!', 'danger'));
+        }
     }
 
     public function new(): string

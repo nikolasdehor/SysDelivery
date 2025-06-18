@@ -1,0 +1,7 @@
+<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" fill="#f8f9fa" stroke="#dee2e6" stroke-width="2"/>
+  <text x="100" y="90" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#6c757d">Imagem</text>
+  <text x="100" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#6c757d">não encontrada</text>
+  <circle cx="100" cy="140" r="15" fill="none" stroke="#6c757d" stroke-width="2"/>
+  <circle cx="100" cy="140" r="5" fill="#6c757d"/>
+</svg>

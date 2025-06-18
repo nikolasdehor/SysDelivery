@@ -22,8 +22,16 @@ if (isset($_SESSION['login'])) {
 
     <h2 class="border-bottom border-2 border-primary mt-3 mb-4"> <?= $title ?> </h2>
 
-    <?php if (isset($msg))
-            echo $msg; ?>
+    <?php
+    // Exibe mensagens da sessão (flash messages)
+    if (session()->getFlashdata('msg')) {
+        echo session()->getFlashdata('msg');
+    }
+    // Exibe mensagens passadas diretamente
+    if (isset($msg)) {
+        echo $msg;
+    }
+    ?>
 
     <form action="<?= base_url('categorias/search'); ?>" class="d-flex" role="search" method="post">
         <input class="form-control me-2" name="pesquisar" type="search" placeholder="Pesquisar" aria-label="Search">

@@ -170,11 +170,19 @@ $routes->get('/carrinho/limpar', 'CarrinhoController::limpar');
 $routes->post('/carrinho/aplicar-cupom', 'CarrinhoController::aplicarCupom');
 $routes->post('/carrinho/remover-cupom', 'CarrinhoController::removerCupom');
 $routes->get('/carrinho/contar-itens', 'CarrinhoController::contarItens');
+$routes->get('/carrinho/checkout', 'CarrinhoController::checkout');
+$routes->post('/carrinho/processar-pedido', 'CarrinhoController::processarPedido');
+$routes->get('/carrinho/teste', 'CarrinhoController::teste');
+$routes->get('/carrinho/debug-total', 'CarrinhoController::debugTotal');
 
 // Rotas de Avaliações
 $routes->get('/avaliacoes/produto/(:num)', 'AvaliacoesController::produto/$1');
 $routes->get('/avaliacoes/adicionar/(:num)', 'AvaliacoesController::adicionar/$1');
 $routes->post('/avaliacoes/salvar', 'AvaliacoesController::salvar');
+
+// Rotas de Setup (temporárias)
+$routes->get('/setup/verificar-tabelas', 'SetupController::verificarTabelas');
+$routes->get('/setup/criar-tabela-carrinho', 'SetupController::criarTabelaCarrinho');
 $routes->get('/avaliacoes/editar/(:num)', 'AvaliacoesController::editar/$1');
 $routes->post('/avaliacoes/atualizar', 'AvaliacoesController::atualizar');
 $routes->get('/avaliacoes/remover/(:num)', 'AvaliacoesController::remover/$1');

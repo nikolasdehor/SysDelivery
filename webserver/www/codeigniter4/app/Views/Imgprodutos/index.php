@@ -22,9 +22,16 @@ if (isset($_SESSION['login'])) {
 
     <h2 class="border-bottom border-2 border-primary mt-3 mb-4"> <?= $title ?> </h2>
 
-    <?php if (isset($msg)) {
-            echo $msg;
-        } ?>
+    <?php
+    // Exibe mensagens da sessão (flash messages)
+    if (session()->getFlashdata('msg')) {
+        echo session()->getFlashdata('msg');
+    }
+    // Exibe mensagens passadas diretamente
+    if (isset($msg)) {
+        echo $msg;
+    }
+    ?>
 
     <form action="<?= base_url('imgprodutos/search'); ?>" class="d-flex" role="search" method="post">
         <input class="form-control me-2" name="pesquisar" type="search" placeholder="Pesquisar" aria-label="Search">
@@ -49,15 +56,29 @@ if (isset($_SESSION['login'])) {
         </thead>
         <tbody class="table-group-divider">
 
-            <?php for ($i = 0; $i < count($imgprodutos); $i++) { ?>
+            <?php
+            helper('image'); // Carrega o helper de imagens
+            for ($i = 0; $i < count($imgprodutos); $i++) {
+                $isExternalLink = isExternalImage($imgprodutos[$i]->imgprodutos_link);
+                $linkDisplay = $isExternalLink ? $imgprodutos[$i]->imgprodutos_link : 'assets/' . $imgprodutos[$i]->imgprodutos_link;
+            ?>
             <tr>
                 <th scope="row"><?= $imgprodutos[$i]->imgprodutos_id; ?></th>
                 <td>
-                    <img width="50" src="<?= base_url('assets/' . $imgprodutos[$i]->imgprodutos_link) ?>"
-                        alt="<?= $imgprodutos[$i]->imgprodutos_descricao ?>">
+                    <?= getImageTag(
+                        $imgprodutos[$i]->imgprodutos_link,
+                        $imgprodutos[$i]->imgprodutos_descricao,
+                        '',
+                        'width: 50px; object-fit: cover; border-radius: 4px;'
+                    ) ?>
                 </td>
                 <td>
-                    <?= 'assets/' . $imgprodutos[$i]->imgprodutos_link; ?>
+                    <small><?= $linkDisplay; ?></small>
+                    <?php if ($isExternalLink): ?>
+                        <br><span class="badge bg-info">Link Externo</span>
+                    <?php else: ?>
+                        <br><span class="badge bg-success">Upload Local</span>
+                    <?php endif; ?>
                 </td>
                 <td>
                     <a class="btn btn-primary"

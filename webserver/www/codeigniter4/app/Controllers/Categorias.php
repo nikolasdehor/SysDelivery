@@ -43,16 +43,17 @@ class Categorias extends BaseController
         if(!$this->validate([
             'categorias_nome' => 'required|max_length[255]|min_length[3]',
         ])) {
-            
+
             // The validation fails, so returns the form.
             $data['categorias'] = (object) [
-                //'categorias_id' => $_REQUEST['categorias_id'],
+                'categorias_id' => '', // Adicionado para evitar erro na view
                 'categorias_nome' => $_REQUEST['categorias_nome'],
             ];
-            
+
             $data['title'] = 'Categorias';
             $data['form'] = 'Cadastrar';
             $data['op'] = 'create';
+            $data['validation'] = $this->validator; // Passa os erros de validação
             return view('categorias/form',$data);
         }
 
@@ -61,11 +62,9 @@ class Categorias extends BaseController
             'categorias_nome' => $_REQUEST['categorias_nome']
 
         ]);
-        
-        $data['msg'] = msg('Cadastrado com Sucesso!','success');
-        $data['categorias'] = $this->categorias->findAll();
-        $data['title'] = 'Categorias';
-        return view('categorias/index',$data);
+
+        // Redirecionamento com mensagem de sucesso
+        return redirect()->to('/categorias')->with('msg', msg('Cadastrado com Sucesso!','success'));
 
     }
 
@@ -73,10 +72,9 @@ class Categorias extends BaseController
     {
 
         $this->categorias->where('categorias_id', (int) $id)->delete();
-        $data['msg'] = msg('Deletado com Sucesso!','success');
-        $data['categorias'] = $this->categorias->findAll();
-        $data['title'] = 'Categorias';
-        return view('categorias/index',$data);
+
+        // Redirecionamento com mensagem de sucesso
+        return redirect()->to('/categorias')->with('msg', msg('Deletado com Sucesso!','success'));
     }
 
     public function edit($id)
@@ -96,10 +94,9 @@ class Categorias extends BaseController
         ];
 
         $this->categorias->update($_REQUEST['categorias_id'], $dataForm);
-        $data['msg'] = msg('Alterado com Sucesso!','success');
-        $data['categorias'] = $this->categorias->findAll();
-        $data['title'] = 'Categorias';
-        return view('categorias/index',$data);
+
+        // Redirecionamento com mensagem de sucesso
+        return redirect()->to('/categorias')->with('msg', msg('Alterado com Sucesso!','success'));
     }
 
     public function search()

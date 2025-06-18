@@ -10,11 +10,13 @@ if (isset($_SESSION['login'])) {
 
         // Carrega o template correto de acordo com o nível
         if ($login->usuarios_nivel == 2) {
-            echo $this->extend('Templates_admin');
+            $template = 'Templates_admin';
         } else {
-            echo $this->extend('Templates_funcionario');
+            $template = 'Templates_funcionario';
         }
         ?>
+
+<?= $this->extend($template) ?>
 <?= $this->section('content') ?>
 
 
@@ -23,11 +25,36 @@ if (isset($_SESSION['login'])) {
         <?= ucfirst($form) . ' ' . $title ?>
     </h2>
 
+    <?php
+    // Exibe erros de validação se existirem
+    if (session()->getFlashdata('errors')) {
+        echo '<div class="alert alert-danger">';
+        foreach (session()->getFlashdata('errors') as $error) {
+            echo '<p>' . $error . '</p>';
+        }
+        echo '</div>';
+    }
+
+    // Exibe erros de validação do CodeIgniter
+    if (isset($validation)) {
+        echo '<div class="alert alert-danger">';
+        echo $validation->listErrors();
+        echo '</div>';
+    }
+    ?>
+
     <form action="<?= base_url('categorias/' . $op); ?>" method="post">
         <div class="mb-3">
-            <label for="categorias_nome" class="form-label"> Categoria </label>
-            <input type="text" class="form-control" name="categorias_nome" value="<?= $categorias->categorias_nome; ?>"
-                id="categorias_nome">
+            <label for="categorias_nome" class="form-label">Nome da Categoria <span class="text-danger">*</span></label>
+            <input type="text"
+                   class="form-control"
+                   name="categorias_nome"
+                   id="categorias_nome"
+                   value="<?= isset($categorias->categorias_nome) ? $categorias->categorias_nome : ''; ?>"
+                   placeholder="Digite o nome da categoria (ex: Bebidas, Lanches, Sobremesas)"
+                   required
+                   style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; min-height: 40px;">
+            <small class="form-text text-muted">Mínimo 3 caracteres, máximo 255 caracteres</small>
         </div>
 
 

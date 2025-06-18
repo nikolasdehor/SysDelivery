@@ -79,8 +79,12 @@ session();
 <?= $this->endSection() ?>
 
 <?php
-     }else{
-
+     } elseif($login->usuarios_nivel == 0) {
+         // View para clientes - será exibida no perfil do usuário
+         // Esta view não deve ser acessada diretamente por clientes
+         $data['msg'] = msg("Acesse seus endereços através do seu perfil!","info");
+         echo view('usuarios/perfil', $data);
+     } else {
          $data['msg'] = msg("Sem permissão de acesso!","danger");
          echo view('login',$data);
      }

@@ -46,11 +46,12 @@ class Cadastro extends BaseController
 
         // Validação adicional de força da senha
         $senha = $this->request->getPost('senha');
-        $passwordErrors = validate_password_strength($senha, 8);
+        $senhaValidacao = validate_password_strength($senha, 8);
 
-        if (!empty($passwordErrors)) {
-            log_message('error', 'Senha não atende aos requisitos de segurança: ' . json_encode($passwordErrors));
-            return redirect()->back()->withInput()->with('errors', ['senha' => 'A senha deve atender aos seguintes requisitos: ' . implode(', ', $passwordErrors)]);
+        if (!$senhaValidacao['valid']) {
+            $errors = implode(', ', $senhaValidacao['errors']);
+            log_message('error', 'Senha não atende aos requisitos de segurança: ' . $errors);
+            return redirect()->back()->withInput()->with('errors', ['senha' => 'A senha deve atender aos seguintes requisitos: ' . $errors]);
         }
 
         log_message('debug', 'Validação passou, tentando salvar usuário...');

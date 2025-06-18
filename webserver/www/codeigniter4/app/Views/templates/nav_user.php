@@ -21,30 +21,73 @@
                 </li>
 
                 <li class="nav-item">
+                    <a class="nav-link" href="<?php echo base_url('carrinho') ?>">
+                        <i class="bi bi-cart3"></i>
+                        Carrinho
+                        <span id="carrinho-badge" class="badge bg-danger ms-1">0</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
                     <a class="nav-link" href="<?php echo base_url('pedidos') ?>">
                         <i class="bi bi-table"></i>
-                        Pedidos
+                        Meus Pedidos
                     </a>
                 </li>
 
             </ul>
 
 
-            <div class="d-flex">
-                <!-- Usuario Logado -->
-                <span class="navbar-text text-white me-3">
-                    <a class="nav-link text-white" href="<?php echo base_url('usuarios/perfil/' . session()->get('login')->usuarios_id) ?>">
+            <div class="d-flex align-items-center">
+                <!-- Dropdown do usuário -->
+                <div class="dropdown me-3">
+                    <a class="nav-link dropdown-toggle text-white" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-person-circle"></i>
                         <?php echo session()->get('login')->usuarios_nome ?>
                     </a>
-                </span>
-                <!-- Botão Sair -->
-                <a class="btn btn-outline-primary me-2" href="<?php echo base_url('login/logout') ?>">
-                    <i class="bi bi-unlock"></i>
-                    sair
-                </a>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        <li>
+                            <a class="dropdown-item" href="<?php echo base_url('usuarios/perfil/' . session()->get('login')->usuarios_id) ?>">
+                                <i class="bi bi-person"></i> Meu Perfil
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="<?php echo base_url('enderecos/new') ?>">
+                                <i class="bi bi-geo-alt"></i> Adicionar Endereço
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="<?php echo base_url('login/logout') ?>">
+                                <i class="bi bi-box-arrow-right"></i> Sair
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
 </nav>
 <!-- Fecha o menu de navegação -->
+
+<script>
+// Atualizar badge do carrinho
+function atualizarBadgeCarrinho() {
+    fetch('<?= base_url('carrinho/contar-itens') ?>')
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.getElementById('carrinho-badge');
+            if (badge) {
+                badge.textContent = data.total_itens || 0;
+                badge.style.display = data.total_itens > 0 ? 'inline' : 'none';
+            }
+        })
+        .catch(error => console.log('Erro ao atualizar carrinho:', error));
+}
+
+// Atualizar ao carregar a página
+document.addEventListener('DOMContentLoaded', atualizarBadgeCarrinho);
+
+// Atualizar a cada 30 segundos
+setInterval(atualizarBadgeCarrinho, 30000);
+</script>

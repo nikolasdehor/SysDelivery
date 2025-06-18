@@ -38,9 +38,15 @@ if (isset($_SESSION['login'])) {
                         <?php foreach ($itens as $item): ?>
                             <div class="row align-items-center mb-3 pb-3 border-bottom" id="item-<?= $item->carrinho_id ?>">
                                 <div class="col-md-2">
-                                    <?php if (!empty($item->imgprodutos_link)): ?>
-                                        <img src="<?= base_url('assets/' . $item->imgprodutos_link) ?>" 
-                                             class="img-fluid rounded" alt="<?= esc($item->produtos_nome) ?>">
+                                    <?php
+                                    helper('image'); // Carrega o helper de imagens
+                                    if (!empty($item->imgprodutos_link)): ?>
+                                        <?= getImageTag(
+                                            $item->imgprodutos_link,
+                                            esc($item->produtos_nome),
+                                            'img-fluid rounded',
+                                            'height: 80px; object-fit: cover;'
+                                        ) ?>
                                     <?php else: ?>
                                         <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 80px;">
                                             <i class="bi bi-image text-muted"></i>
@@ -52,7 +58,7 @@ if (isset($_SESSION['login'])) {
                                     <small class="text-muted"><?= esc($item->produtos_descricao) ?></small>
                                 </div>
                                 <div class="col-md-2">
-                                    <strong class="text-success">
+                                    <strong class="text-success" data-preco="<?= $item->carrinho_preco_unitario ?>">
                                         R$ <?= number_format($item->carrinho_preco_unitario, 2, ',', '.') ?>
                                     </strong>
                                 </div>
@@ -103,6 +109,7 @@ if (isset($_SESSION['login'])) {
                         <div class="d-flex justify-content-between mb-2">
                             <span>Subtotal:</span>
                             <span id="subtotal">R$ <?= number_format($total, 2, ',', '.') ?></span>
+                            <!-- Debug: Total bruto: <?= $total ?> | Tipo: <?= gettype($total) ?> -->
                         </div>
                         
                         <!-- Cupom de Desconto -->
@@ -134,7 +141,16 @@ if (isset($_SESSION['login'])) {
                             </strong>
                         </div>
 
-                        <button class="btn btn-success w-100 mb-2">
+                        <?php
+                        // Debug: calcular total manualmente na view
+                        $totalManual = 0;
+                        foreach ($itens as $item) {
+                            $totalManual += $item->carrinho_quantidade * $item->carrinho_preco_unitario;
+                        }
+                        ?>
+                        <!-- Debug: Total manual na view: R$ <?= number_format($totalManual, 2, ',', '.') ?> -->
+
+                        <button class="btn btn-success w-100 mb-2" onclick="finalizarPedido()">
                             <i class="bi bi-credit-card"></i> Finalizar Pedido
                         </button>
 
@@ -270,6 +286,55 @@ function atualizarBadgeCarrinho(totalItens) {
         }
     }
 }
+
+function finalizarPedido() {
+    // Verificar se há itens no carrinho
+    const totalItens = <?= $total_itens ?? 0 ?>;
+    if (totalItens === 0) {
+        alert('Seu carrinho está vazio!');
+        return;
+    }
+
+    // Calcular total manualmente dos itens visíveis
+    let totalCalculado = 0;
+    document.querySelectorAll('[data-preco]').forEach(function(item) {
+        const preco = parseFloat(item.dataset.preco);
+        const quantidade = parseInt(item.closest('tr').querySelector('input[type="number"]').value);
+        totalCalculado += preco * quantidade;
+    });
+
+    if (totalCalculado === 0) {
+        alert('Erro: Total do carrinho é R$ 0,00. Verifique os itens.');
+        return;
+    }
+
+    // Confirmar finalização
+    if (!confirm(`Deseja finalizar o pedido no valor de R$ ${totalCalculado.toFixed(2).replace('.', ',')}?`)) {
+        return;
+    }
+
+    // Redirecionar para página de checkout
+    window.location.href = '<?= base_url('/carrinho/checkout') ?>';
+}
+
+// Função para recalcular total na página
+function recalcularTotal() {
+    let total = 0;
+    document.querySelectorAll('[data-preco]').forEach(function(item) {
+        const preco = parseFloat(item.dataset.preco);
+        const quantidadeInput = item.closest('.row').querySelector('input[type="number"]');
+        const quantidade = parseInt(quantidadeInput.value);
+        total += preco * quantidade;
+    });
+
+    document.getElementById('subtotal').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+    document.getElementById('total-final').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+}
+
+// Executar ao carregar a página
+document.addEventListener('DOMContentLoaded', function() {
+    recalcularTotal();
+});
 </script>
 
 <?= $this->endSection() ?>

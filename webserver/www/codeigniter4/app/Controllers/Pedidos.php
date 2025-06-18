@@ -291,7 +291,7 @@ class Pedidos extends BaseController
         $data['itens_pedido'] = $this->itensPedido
             ->join('produtos', 'produtos.produtos_id = itens_pedido.produtos_id')
             ->where('itens_pedido.pedidos_id', $id)
-            ->select('itens_pedido.*, produtos.produtos_nome, produtos.produtos_preco')
+            ->select('itens_pedido.*, produtos.produtos_nome, produtos.produtos_preco_venda')
             ->findAll();
 
         if (!$data['pedidos']) {

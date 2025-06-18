@@ -23,6 +23,24 @@ if (isset($_SESSION['login'])) {
         <?= ucfirst($form) . ' ' . $title ?>
     </h2>
 
+    <?php
+    // Exibe erros de validação se existirem
+    if (isset($errors) && !empty($errors)) {
+        echo '<div class="alert alert-danger">';
+        foreach ($errors as $error) {
+            echo '<p>' . $error . '</p>';
+        }
+        echo '</div>';
+    }
+
+    // Exibe erros de validação do CodeIgniter
+    if (isset($validation)) {
+        echo '<div class="alert alert-danger">';
+        echo $validation->listErrors();
+        echo '</div>';
+    }
+    ?>
+
     <?= form_open_multipart('imgprodutos/' . $op) ?>
     <div class="mb-3">
         <label for="imgprodutos_descricao" class="form-label"> Descrição </label>
@@ -51,10 +69,37 @@ if (isset($_SESSION['login'])) {
         </select>
     </div>
 
+    <!-- Opções de imagem -->
     <div class="mb-3">
-        <label for="imgprodutos_link" class="form-label"> Upload </label>
-        <input type="file" class="form-control" name="imgprodutos_link" value="<?= $imgprodutos->imgprodutos_link; ?>"
-            id="imgprodutos_link">
+        <label class="form-label">Tipo de Imagem</label>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="tipo_imagem" id="tipo_upload" value="upload" checked>
+            <label class="form-check-label" for="tipo_upload">
+                Upload de arquivo
+            </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="tipo_imagem" id="tipo_link" value="link">
+            <label class="form-check-label" for="tipo_link">
+                Link da imagem
+            </label>
+        </div>
+    </div>
+
+    <!-- Upload de arquivo -->
+    <div class="mb-3" id="div_upload">
+        <label for="imgprodutos_file" class="form-label">Upload de Arquivo <span class="text-muted">(JPG, PNG, GIF, WEBP - Máx: 10MB)</span></label>
+        <input type="file" class="form-control" name="imgprodutos_file" id="imgprodutos_file"
+               accept="image/jpg,image/jpeg,image/png,image/gif,image/webp">
+    </div>
+
+    <!-- Link da imagem -->
+    <div class="mb-3" id="div_link" style="display: none;">
+        <label for="imgprodutos_url" class="form-label">URL da Imagem <span class="text-danger">*</span></label>
+        <input type="url" class="form-control" name="imgprodutos_url" id="imgprodutos_url"
+               placeholder="https://exemplo.com/imagem.jpg"
+               value="<?= isset($imgprodutos->imgprodutos_link) && !str_starts_with($imgprodutos->imgprodutos_link, 'uploads/') ? $imgprodutos->imgprodutos_link : ''; ?>">
+        <small class="form-text text-muted">Cole aqui o link direto da imagem (deve terminar com .jpg, .png, .gif, etc.)</small>
     </div>
 
     <input type="hidden" name="imgprodutos_id" value="<?= $imgprodutos->imgprodutos_id; ?>">
@@ -66,6 +111,49 @@ if (isset($_SESSION['login'])) {
     </form>
 
 </div>
+
+<script>
+// JavaScript para alternar entre upload e link
+document.addEventListener('DOMContentLoaded', function() {
+    const tipoUpload = document.getElementById('tipo_upload');
+    const tipoLink = document.getElementById('tipo_link');
+    const divUpload = document.getElementById('div_upload');
+    const divLink = document.getElementById('div_link');
+    const inputFile = document.getElementById('imgprodutos_file');
+    const inputUrl = document.getElementById('imgprodutos_url');
+
+    // Função para alternar entre os tipos
+    function alternarTipo() {
+        if (tipoUpload.checked) {
+            divUpload.style.display = 'block';
+            divLink.style.display = 'none';
+            inputFile.required = true;
+            inputUrl.required = false;
+            inputUrl.value = '';
+        } else {
+            divUpload.style.display = 'none';
+            divLink.style.display = 'block';
+            inputFile.required = false;
+            inputUrl.required = true;
+            inputFile.value = '';
+        }
+    }
+
+    // Verificar se é edição com link existente
+    const linkExistente = '<?= isset($imgprodutos->imgprodutos_link) ? $imgprodutos->imgprodutos_link : ""; ?>';
+    if (linkExistente && !linkExistente.startsWith('uploads/')) {
+        tipoLink.checked = true;
+        alternarTipo();
+    }
+
+    // Event listeners
+    tipoUpload.addEventListener('change', alternarTipo);
+    tipoLink.addEventListener('change', alternarTipo);
+
+    // Inicializar
+    alternarTipo();
+});
+</script>
 
 <?= $this->endSection() ?>
 

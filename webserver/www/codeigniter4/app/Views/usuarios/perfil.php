@@ -30,9 +30,16 @@ if (isset($_SESSION['login'])) {
         </div>
     </div>
 
-    <?php if (isset($msg)): ?>
-    <?= $msg; ?>
-    <?php endif; ?>
+    <?php
+    // Exibe mensagens da sessão (flash messages)
+    if (session()->getFlashdata('msg')) {
+        echo session()->getFlashdata('msg');
+    }
+    // Exibe mensagens passadas diretamente
+    if (isset($msg)) {
+        echo $msg;
+    }
+    ?>
 
     <div class="card mb-4">
         <div class="card-body">
