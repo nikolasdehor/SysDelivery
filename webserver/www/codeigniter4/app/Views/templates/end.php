@@ -120,6 +120,28 @@ function marcarTodasLidas() {
     .catch(error => console.log('Erro ao marcar notificações:', error));
 }
 
+// Função para aplicar máscara de CPF
+function mascaraCPF(input) {
+    let value = input.value.replace(/\D/g, '');
+    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+    value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    input.value = value;
+}
+
+// Função para aplicar máscara de telefone
+function mascaraTelefone(input) {
+    let value = input.value.replace(/\D/g, '');
+    if (value.length <= 10) {
+        value = value.replace(/(\d{2})(\d)/, '($1) $2');
+        value = value.replace(/(\d{4})(\d)/, '$1-$2');
+    } else {
+        value = value.replace(/(\d{2})(\d)/, '($1) $2');
+        value = value.replace(/(\d{5})(\d)/, '$1-$2');
+    }
+    input.value = value;
+}
+
 // Inicializa quando a página carrega
 document.addEventListener('DOMContentLoaded', function() {
     atualizarBadges();
@@ -128,6 +150,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const notifDropdown = document.querySelector('[data-bs-toggle="dropdown"]');
     if (notifDropdown) {
         notifDropdown.addEventListener('show.bs.dropdown', carregarNotificacoes);
+    }
+
+    // Aplica máscaras nos campos de CPF e telefone
+    const cpfInput = document.getElementById('cpf');
+    if (cpfInput) {
+        cpfInput.addEventListener('input', function() {
+            mascaraCPF(this);
+        });
+    }
+
+    const telefoneInput = document.getElementById('telefone');
+    if (telefoneInput) {
+        telefoneInput.addEventListener('input', function() {
+            mascaraTelefone(this);
+        });
     }
 
     // Atualiza badges a cada 30 segundos

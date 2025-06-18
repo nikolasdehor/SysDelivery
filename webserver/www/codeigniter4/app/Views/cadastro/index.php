@@ -3,6 +3,18 @@
         <div class="mx-auto border border-1 border-secondary rounded p-5 col-lg-5">
             <div class="text-center mt-3 mb-3">
                 <?php if(isset($msg)){echo $msg;} ?>
+
+                <!-- Exibir erros de validação -->
+                <?php if (session('errors')): ?>
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            <?php foreach (session('errors') as $error): ?>
+                                <li><?= esc($error) ?></li>
+                            <?php endforeach ?>
+                        </ul>
+                    </div>
+                <?php endif ?>
+
                 <img src="<?php echo base_url('assets/images/sd_logo.png') ?>" alt="SysDelivery" width="180">
                 <h2 class="p-3">Cadastrar uma Conta</h2>
             </div>

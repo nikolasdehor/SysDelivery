@@ -33,13 +33,13 @@ class Login extends BaseController
         $login = sanitize_input($_REQUEST['login'], 'string');
         $senha = $_REQUEST['senha'];
 
-        // Rate limiting para tentativas de login
-        $rateLimitKey = "login_attempts_" . $this->request->getIPAddress();
-        if (!rate_limit_check($rateLimitKey, 5, 900)) { // 5 tentativas em 15 minutos
-            $this->data['msg'] = msg('Muitas tentativas de login. Tente novamente em 15 minutos.', 'danger');
-            log_security_event('LOGIN_RATE_LIMIT_EXCEEDED', ['ip' => $this->request->getIPAddress(), 'login' => $login]);
-            return view('login', $this->data);
-        }
+        // Rate limiting temporariamente desabilitado para desenvolvimento
+        // $rateLimitKey = "login_attempts_" . $this->request->getIPAddress();
+        // if (!rate_limit_check($rateLimitKey, 5, 900)) { // 5 tentativas em 15 minutos
+        //     $this->data['msg'] = msg('Muitas tentativas de login. Tente novamente em 15 minutos.', 'danger');
+        //     log_security_event('LOGIN_RATE_LIMIT_EXCEEDED', ['ip' => $this->request->getIPAddress(), 'login' => $login]);
+        //     return view('login', $this->data);
+        // }
 
         // Busca usuário por CPF ou email
         $this->data['usuarios'] = $this->usuarios->where('usuarios_cpf', $login)

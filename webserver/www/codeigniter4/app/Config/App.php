@@ -14,18 +14,23 @@ class App extends BaseConfig
      * URL to your CodeIgniter root. Typically, this will be your base URL,
      * WITH a trailing slash:
      *
-     * E.g., http://example.com/
+     *    http://example.com/
      */
-    public string $baseURL = 'http://localhost:8080';
+    public string $baseURL = 'http://localhost:8050/codeigniter4/public/';
 
     /**
      * Allowed Hostnames in the Site URL other than the hostname in the baseURL.
      * If you want to accept multiple Hostnames, set this.
      *
      * E.g.,
-     * When your site URL ($baseURL) is 'http://example.com/', and your site
-     * also accepts 'http://media.example.com/' and 'http://accounts.example.com/':
-     *     ['media.example.com', 'accounts.example.com']
+     * When your site URL ($baseURL) is 'http://example.com/', and your site is
+     * also accessible via 'http://media.example.com/' and
+     * 'http://accounts.example.com/', set the following:
+     *
+     *    $allowedHostnames = [
+     *        'media.example.com',
+     *        'accounts.example.com',
+     *    ];
      *
      * @var list<string>
      */
@@ -36,52 +41,28 @@ class App extends BaseConfig
      * Index File
      * --------------------------------------------------------------------------
      *
-     * Typically, this will be your `index.php` file, unless you've renamed it to
-     * something else. If you have configured your web server to remove this file
-     * from your site URIs, set this variable to an empty string.
+     * Typically, this will be your index.php file, unless you've renamed it to
+     * something else. If you are using mod_rewrite to remove the page set this
+     * variable so that it is blank.
      */
-    public string $indexPage = 'index.php';
+    public string $indexPage = '';
 
     /**
      * --------------------------------------------------------------------------
      * URI PROTOCOL
      * --------------------------------------------------------------------------
      *
-     * This item determines which server global should be used to retrieve the
-     * URI string. The default setting of 'REQUEST_URI' works for most servers.
+     * This item determines which getServer global should be used to retrieve the
+     * URI string.  The default setting of 'REQUEST_URI' works for most servers.
      * If your links do not seem to work, try one of the other delicious flavors:
      *
-     *  'REQUEST_URI': Uses $_SERVER['REQUEST_URI']
-     * 'QUERY_STRING': Uses $_SERVER['QUERY_STRING']
-     *    'PATH_INFO': Uses $_SERVER['PATH_INFO']
+     * 'REQUEST_URI'    Uses $_SERVER['REQUEST_URI']
+     * 'QUERY_STRING'   Uses $_SERVER['QUERY_STRING']
+     * 'PATH_INFO'      Uses $_SERVER['PATH_INFO']
      *
      * WARNING: If you set this to 'PATH_INFO', URIs will always be URL-decoded!
      */
     public string $uriProtocol = 'REQUEST_URI';
-
-    /*
-    |--------------------------------------------------------------------------
-    | Allowed URL Characters
-    |--------------------------------------------------------------------------
-    |
-    | This lets you specify which characters are permitted within your URLs.
-    | When someone tries to submit a URL with disallowed characters they will
-    | get a warning message.
-    |
-    | As a security measure you are STRONGLY encouraged to restrict URLs to
-    | as few characters as possible.
-    |
-    | By default, only these are allowed: `a-z 0-9~%.:_-`
-    |
-    | Set an empty string to allow all characters -- but only if you are insane.
-    |
-    | The configured value is actually a regular expression character group
-    | and it will be used as: '/\A[<permittedURIChars>]+\z/iu'
-    |
-    | DO NOT CHANGE THIS UNLESS YOU FULLY UNDERSTAND THE REPERCUSSIONS!!
-    |
-    */
-    public string $permittedURIChars = 'a-z 0-9~%.:_\-';
 
     /**
      * --------------------------------------------------------------------------
@@ -129,11 +110,8 @@ class App extends BaseConfig
      *
      * The default timezone that will be used in your application to display
      * dates with the date helper, and can be retrieved through app_timezone()
-     *
-     * @see https://www.php.net/manual/en/timezones.php for list of timezones
-     *      supported by PHP.
      */
-    public string $appTimezone = 'UTC';
+    public string $appTimezone = 'America/Chicago';
 
     /**
      * --------------------------------------------------------------------------
@@ -161,13 +139,161 @@ class App extends BaseConfig
 
     /**
      * --------------------------------------------------------------------------
+     * Session Driver
+     * --------------------------------------------------------------------------
+     *
+     * The session storage driver to use:
+     * - `CodeIgniter\Session\Handlers\FileHandler`
+     * - `CodeIgniter\Session\Handlers\DatabaseHandler`
+     * - `CodeIgniter\Session\Handlers\MemcachedHandler`
+     * - `CodeIgniter\Session\Handlers\RedisHandler`
+     */
+    public string $sessionDriver = 'CodeIgniter\Session\Handlers\FileHandler';
+
+    /**
+     * --------------------------------------------------------------------------
+     * Session Cookie Name
+     * --------------------------------------------------------------------------
+     *
+     * The session cookie name, must contain only [0-9a-z_-] characters
+     */
+    public string $sessionCookieName = 'ci_session';
+
+    /**
+     * --------------------------------------------------------------------------
+     * Session Expiration
+     * --------------------------------------------------------------------------
+     *
+     * The number of SECONDS you want the session to last.
+     * Setting to 0 (zero) means expire when the browser is closed.
+     */
+    public int $sessionExpiration = 7200;
+
+    /**
+     * --------------------------------------------------------------------------
+     * Session Save Path
+     * --------------------------------------------------------------------------
+     *
+     * The location to save sessions to and is driver dependent.
+     *
+     * For the 'files' driver, it's a path to a writable directory.
+     * WARNING: Only absolute paths are supported!
+     *
+     * For the 'database' driver, it's a table name.
+     * Please read up the manual for the format with other session drivers.
+     *
+     * IMPORTANT: You are REQUIRED to set a valid save path!
+     */
+    public string $sessionSavePath = WRITEPATH . 'session';
+
+    /**
+     * --------------------------------------------------------------------------
+     * Session Match IP
+     * --------------------------------------------------------------------------
+     *
+     * Whether to match the user's IP address when reading the session data.
+     *
+     * WARNING: If you're using the database driver, don't forget to update
+     *          your session table's PRIMARY KEY when changing this setting.
+     */
+    public bool $sessionMatchIP = false;
+
+    /**
+     * --------------------------------------------------------------------------
+     * Session Time to Update
+     * --------------------------------------------------------------------------
+     *
+     * How many seconds between CI regenerating the session ID.
+     */
+    public int $sessionTimeToUpdate = 300;
+
+    /**
+     * --------------------------------------------------------------------------
+     * Session Regenerate Destroy
+     * --------------------------------------------------------------------------
+     *
+     * Whether to destroy session data associated with the old session ID
+     * when auto-regenerating the session ID. When set to FALSE, the data
+     * will be later deleted by the garbage collector.
+     */
+    public bool $sessionRegenerateDestroy = false;
+
+    /**
+     * --------------------------------------------------------------------------
+     * Cookie Prefix
+     * --------------------------------------------------------------------------
+     *
+     * Set a cookie name prefix if you need to avoid collisions.
+     */
+    public string $cookiePrefix = '';
+
+    /**
+     * --------------------------------------------------------------------------
+     * Cookie Domain
+     * --------------------------------------------------------------------------
+     *
+     * Set to `.your-domain.com` for site-wide cookies.
+     */
+    public string $cookieDomain = '';
+
+    /**
+     * --------------------------------------------------------------------------
+     * Cookie Path
+     * --------------------------------------------------------------------------
+     *
+     * Typically will be a forward slash.
+     */
+    public string $cookiePath = '/';
+
+    /**
+     * --------------------------------------------------------------------------
+     * Cookie Secure
+     * --------------------------------------------------------------------------
+     *
+     * Cookie will only be set if a secure HTTPS connection exists.
+     */
+    public bool $cookieSecure = false;
+
+    /**
+     * --------------------------------------------------------------------------
+     * Cookie HttpOnly
+     * --------------------------------------------------------------------------
+     *
+     * Cookie will only be accessible via HTTP(S) (no JavaScript).
+     */
+    public bool $cookieHTTPOnly = true;
+
+    /**
+     * --------------------------------------------------------------------------
+     * Cookie SameSite
+     * --------------------------------------------------------------------------
+     *
+     * Configure cookie SameSite setting. Allowed values are:
+     * - None
+     * - Lax
+     * - Strict
+     * - ''
+     *
+     * Alternatively, you can use the constant names:
+     * - `Cookie::SAMESITE_NONE`
+     * - `Cookie::SAMESITE_LAX`
+     * - `Cookie::SAMESITE_STRICT`
+     *
+     * Defaults to `Lax` for compatibility with modern browsers. Setting `''`
+     * (empty string) means default SameSite attribute set by browsers (`Lax`)
+     * will be set on cookies. If set to `None`, `$cookieSecure` must also be set.
+     */
+    public string $cookieSameSite = 'Lax';
+
+    /**
+     * --------------------------------------------------------------------------
      * Reverse Proxy IPs
      * --------------------------------------------------------------------------
      *
      * If your server is behind a reverse proxy, you must whitelist the proxy
      * IP addresses from which CodeIgniter should trust headers such as
-     * X-Forwarded-For or Client-IP in order to properly identify
-     * the visitor's IP address.
+     * X-Forwarded-For or Client-IP in order to properly identify the visitor's
+     * IP address.
      *
      * You need to set a proxy IP address or IP address with subnets and
      * the HTTP header for the client IP address.
@@ -181,6 +307,77 @@ class App extends BaseConfig
      * @var array<string, string>
      */
     public array $proxyIPs = [];
+
+    /**
+     * --------------------------------------------------------------------------
+     * CSRF Token Name
+     * --------------------------------------------------------------------------
+     *
+     * The token name.
+     */
+    public string $CSRFTokenName = 'csrf_test_name';
+
+    /**
+     * --------------------------------------------------------------------------
+     * CSRF Header Name
+     * --------------------------------------------------------------------------
+     *
+     * The header name.
+     */
+    public string $CSRFHeaderName = 'X-CSRF-TOKEN';
+
+    /**
+     * --------------------------------------------------------------------------
+     * CSRF Cookie Name
+     * --------------------------------------------------------------------------
+     *
+     * The cookie name.
+     */
+    public string $CSRFCookieName = 'csrf_cookie_name';
+
+    /**
+     * --------------------------------------------------------------------------
+     * CSRF Expire
+     * --------------------------------------------------------------------------
+     *
+     * The number in seconds the token should expire.
+     */
+    public int $CSRFExpire = 7200;
+
+    /**
+     * --------------------------------------------------------------------------
+     * CSRF Regenerate
+     * --------------------------------------------------------------------------
+     *
+     * Regenerate token on every submission?
+     */
+    public bool $CSRFRegenerate = true;
+
+    /**
+     * --------------------------------------------------------------------------
+     * CSRF Redirect
+     * --------------------------------------------------------------------------
+     *
+     * Redirect to previous page with error on failure?
+     */
+    public bool $CSRFRedirect = false;
+
+    /**
+     * --------------------------------------------------------------------------
+     * CSRF SameSite
+     * --------------------------------------------------------------------------
+     *
+     * Setting for CSRF SameSite cookie token. Allowed values are:
+     * - None
+     * - Lax
+     * - Strict
+     * - ''
+     *
+     * Defaults to `Lax` as recommended in this link:
+     *
+     * @see https://portswigger.net/web-security/csrf/samesite-cookies
+     */
+    public string $CSRFSameSite = 'Lax';
 
     /**
      * --------------------------------------------------------------------------

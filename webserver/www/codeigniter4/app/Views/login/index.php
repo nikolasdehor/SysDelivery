@@ -22,7 +22,7 @@
                             </label>
                             <input type="text" name="login"
                                 placeholder="Informe o seu login"
-                                class="form-control" id="login">
+                                class="form-control" id="login" autocomplete="username">
                             <div id="loginHelp" class="form-text">Entre com o
                                 seu email ou CPF.
                             </div>
@@ -35,7 +35,7 @@
                                 Senha
                             </label>
 
-                            <input type="password" placeholder="Informe a senha" name="senha" class="form-control"id="senha">
+                            <input type="password" placeholder="Informe a senha" name="senha" class="form-control" id="senha" autocomplete="current-password">
                         </div>
 
                         <!-- inpup check -->
